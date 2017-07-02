@@ -1,5 +1,6 @@
 using Meowtrix.osuAMT.MusicProcess;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
@@ -10,41 +11,41 @@ namespace MusicProcessTest
         [Fact]
         public void ConstantInput()
         {
-            var buffer = new short[256];
+            var buffer = new float[256];
             for (int i = 0; i < 256; ++i)
                 buffer[i] = short.MaxValue;
             ManagedFFT256.Execute(buffer);
             Assert.InRange(buffer[0], 32765, 32768);
-            Assert.Equal(Enumerable.Repeat((short)0, 255), new ArraySegment<short>(buffer, 1, 255));
+            for (int i = 1; i < 256; ++i) Assert.Equal(0, buffer[i], 2);
         }
 
         [Fact]
         public void HighFreqInput()
         {
-            var buffer = new short[256];
+            var buffer = new float[256];
             for (int i = 0; i < 256; ++i)
                 buffer[i] = i % 2 == 0 ? short.MaxValue : short.MinValue;
             ManagedFFT256.Execute(buffer);
             Assert.InRange(buffer[128], 32765, 32768);
-            Assert.Equal(Enumerable.Repeat((short)0, 127), new ArraySegment<short>(buffer, 1, 127));
-            Assert.Equal(Enumerable.Repeat((short)0, 127), new ArraySegment<short>(buffer, 129, 127));
+            for (int i = 1; i < 128; ++i) Assert.Equal(0, buffer[i], 2);
+            for (int i = 129; i < 256; ++i) Assert.Equal(0, buffer[i], 2);
         }
 
         [Fact]
         public void LongConstantInput()
         {
-            var buffer = new short[256 * 65536];
+            var buffer = new float[256 * 65536];
             for (int i = 0; i < 256 * 65536; ++i)
                 buffer[i] = short.MaxValue;
             ManagedFFT256.Execute(buffer);
             for (int i = 0; i < 256 * 65536; i += 256)
             {
                 Assert.InRange(buffer[i], 32765, 32768);
-                Assert.Equal(Enumerable.Repeat((short)0, 255), new ArraySegment<short>(buffer, i + 1, 255));
+                for (int j = 1; j < 256; ++j) Assert.Equal(0, buffer[i + j], 2);
             }
         }
-        
-        static short[] staticBuffer = new short[256 * 65536];
+
+        static float[] staticBuffer = new float[256 * 65536];
 
         [Fact]
         public void PerformanceTest()

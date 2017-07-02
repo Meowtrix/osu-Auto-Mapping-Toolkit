@@ -9,7 +9,7 @@ namespace Meowtrix.osuAMT.MusicProcess
     /// Block size is fixed to 256.
     /// </summary>
     /// <param name="data">Data buffer. Must be in size of a multiple of 256.</param>
-    public delegate void FFT256(short[] data);
+    public delegate void FFT256(float[] data);
 
     public static class ManagedFFT256
     {
@@ -46,7 +46,7 @@ namespace Meowtrix.osuAMT.MusicProcess
         /// Algorithm derived from Chapter 30, Introduction to Algorithms, 3rd Edition.
         /// </summary>
         /// <param name="data">See FFT256.</param>
-        public static void Execute(short[] data)
+        public static void Execute(float[] data)
         {
             float[] real = new float[256];
             float[] imag = new float[256];
@@ -83,7 +83,7 @@ namespace Meowtrix.osuAMT.MusicProcess
 
                 // Calculate magnitude, round and write back.
                 for (int i = 0; i < 256; ++i)
-                    data[offset + i] = (short)((int)Math.Sqrt(real[i] * real[i] + imag[i] * imag[i]) / 256);
+                    data[offset + i] = (float)Math.Sqrt(real[i] * real[i] + imag[i] * imag[i]) / 256;
             }
         }
     }

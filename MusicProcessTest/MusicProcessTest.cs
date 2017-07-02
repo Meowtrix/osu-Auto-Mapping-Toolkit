@@ -14,12 +14,11 @@ namespace MusicProcessTest
         [InlineData("Resource/440Hz-5sec.mp3")]
         public void Test(string file)
         {
-            byte[] mp3;
+            float[,] result;
             using (var stream = new FileStream(Path.Combine(
                 Path.GetDirectoryName(typeof(MusicProcessTest).GetTypeInfo().Assembly.Location), file), FileMode.Open, FileAccess.Read))
-            using (var reader = new BinaryReader(stream))
-                mp3 = reader.ReadBytes((int)stream.Length);
-            var result = MusicProcess.ProcessMp3(mp3);
+                result = MusicProcess.ProcessMp3(stream);
+            // What we can do to verify the result?
             return;
         }
     }
