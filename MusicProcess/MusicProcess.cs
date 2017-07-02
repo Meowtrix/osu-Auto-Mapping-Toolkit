@@ -23,16 +23,24 @@ namespace Meowtrix.osuAMT.MusicProcess
         internal static extern unsafe int hip_decode1(hip_t gfp, byte* buffer, [param: MarshalAs(UnmanagedType.SysInt)] int len, short* pcm_l, short* pcm_r);
 
         /// <summary>
+        /// Delegate for an FFT implementation, which runs FFT on the data buffer in place, block by block.
+        /// </summary>
+        /// <param name="data">Data buffer. Must be in size of a multiple of blockSize.</param>
+        /// <param name="blockSize">Block size for doing FFT. Must be in power of two.</param>
+        public delegate void BlockedFFT(short[] data, int blockSize);
+
+        /// <summary>
+        /// Set this to change the FFT implementation used; default to a managed version FFT implementation.
+        /// User may consider provide some optimized or accelerated implementation wrapping MKL, cuFFT or so on.
+        /// </summary>
+        public static BlockedFFT FFT = ManagedBlockedFFT;
+
+        /// <summary>
         /// Process mp3 data for use in training and evaluating the machine learning models.
         /// </summary>
         /// <param name="mp3">Mp3 data in memory.</param>
-        /// <param name="fft">
-        ///     Optional; if provided, this method will use it for doing FFT, otherwise a managed version will be used.
-        ///     Parameters are data buffer and block size; provided optimized algorithm should do FFT block by block.
-        ///     block size is promised to be power of two.
-        /// </param>
         /// <returns>Matrix as data for the ML models. One row for a data point in the sequence.</returns>
-        public static short[,] ProcessMp3(byte[] mp3, Action<short[], int> fft = null)
+        public static short[,] ProcessMp3(byte[] mp3)
         {
             var leftFrames = new List<short[]>();
             var leftBuff = new short[65536];
@@ -68,13 +76,10 @@ namespace Meowtrix.osuAMT.MusicProcess
             var rightPCM = new short[(totalLength + 255) & ~255];
             leftFrames.Aggregate(0, (n, frame) => { Buffer.BlockCopy(frame, 0, leftPCM, n, frame.Length * sizeof(short)); return n + frame.Length; });
             rightFrames.Aggregate(0, (n, frame) => { Buffer.BlockCopy(frame, 0, rightPCM, n, frame.Length * sizeof(short)); return n + frame.Length; });
-
-            // If no optimized FFT algorithm is provided, use managed version.
-            fft = fft ?? ManagedFFT;
-
+            
             // Execute FFT.
-            fft(leftPCM, 256);
-            fft(rightPCM, 256);
+            FFT(leftPCM, 256);
+            FFT(rightPCM, 256);
 
             // Reshape the result into desired dimension.
             var reshaped = new short[(totalLength + 255) / 256, 512];
@@ -87,7 +92,7 @@ namespace Meowtrix.osuAMT.MusicProcess
             return reshaped;
         }
 
-        private static void ManagedFFT(short[] data, int blockSize)
+        private static void ManagedBlockedFFT(short[] data, int blockSize)
         {
             throw new NotImplementedException();
         }
