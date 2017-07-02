@@ -29,5 +29,27 @@ namespace MusicProcessTest
             Assert.Equal(Enumerable.Repeat((short)0, 127), new ArraySegment<short>(buffer, 1, 127));
             Assert.Equal(Enumerable.Repeat((short)0, 127), new ArraySegment<short>(buffer, 129, 127));
         }
+
+        [Fact]
+        public void LongConstantInput()
+        {
+            var buffer = new short[256 * 65536];
+            for (int i = 0; i < 256 * 65536; ++i)
+                buffer[i] = short.MaxValue;
+            ManagedFFT256.Execute(buffer);
+            for (int i = 0; i < 256 * 65536; i += 256)
+            {
+                Assert.InRange(buffer[i], 32765, 32768);
+                Assert.Equal(Enumerable.Repeat((short)0, 255), new ArraySegment<short>(buffer, i + 1, 255));
+            }
+        }
+        
+        static short[] staticBuffer = new short[256 * 65536];
+
+        [Fact]
+        public void PerformanceTest()
+        {
+            ManagedFFT256.Execute(staticBuffer);
+        }
     }
 }
