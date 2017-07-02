@@ -10,6 +10,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Training.DataGenerator", "T
 		{983B9C3F-C94A-406D-A0CD-CF843354E133} = {983B9C3F-C94A-406D-A0CD-CF843354E133}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicProcessTest", "MusicProcessTest\MusicProcessTest.csproj", "{C180721C-46E9-46B4-A393-E91B0292E81C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,6 +26,10 @@ Global
 		{3324F0A5-B1E1-48D2-B059-05AD55A68432}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3324F0A5-B1E1-48D2-B059-05AD55A68432}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3324F0A5-B1E1-48D2-B059-05AD55A68432}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C180721C-46E9-46B4-A393-E91B0292E81C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C180721C-46E9-46B4-A393-E91B0292E81C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C180721C-46E9-46B4-A393-E91B0292E81C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C180721C-46E9-46B4-A393-E91B0292E81C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
