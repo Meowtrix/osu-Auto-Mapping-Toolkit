@@ -24,16 +24,16 @@ namespace Meowtrix.osuAMT.MusicProcess
 
         /// <summary>
         /// Delegate for an FFT implementation, which runs FFT on the data buffer in place, block by block.
+        /// Block size is fixed to 256.
         /// </summary>
-        /// <param name="data">Data buffer. Must be in size of a multiple of blockSize.</param>
-        /// <param name="blockSize">Block size for doing FFT. Must be in power of two.</param>
-        public delegate void BlockedFFT(short[] data, int blockSize);
+        /// <param name="data">Data buffer. Must be in size of a multiple of 256.</param>
+        public delegate void FFT256(short[] data);
 
         /// <summary>
         /// Set this to change the FFT implementation used; default to a managed version FFT implementation.
         /// User may consider provide some optimized or accelerated implementation wrapping MKL, cuFFT or so on.
         /// </summary>
-        public static BlockedFFT FFT = ManagedBlockedFFT;
+        public static FFT256 FFT256Implementation = ManagedFFT256;
 
         /// <summary>
         /// Process mp3 data for use in training and evaluating the machine learning models.
@@ -78,8 +78,8 @@ namespace Meowtrix.osuAMT.MusicProcess
             rightFrames.Aggregate(0, (n, frame) => { Buffer.BlockCopy(frame, 0, rightPCM, n, frame.Length * sizeof(short)); return n + frame.Length; });
             
             // Execute FFT.
-            FFT(leftPCM, 256);
-            FFT(rightPCM, 256);
+            FFT256Implementation(leftPCM);
+            FFT256Implementation(rightPCM);
 
             // Reshape the result into desired dimension.
             var reshaped = new short[(totalLength + 255) / 256, 512];
@@ -92,7 +92,7 @@ namespace Meowtrix.osuAMT.MusicProcess
             return reshaped;
         }
 
-        private static void ManagedBlockedFFT(short[] data, int blockSize)
+        private static void ManagedFFT256(short[] data)
         {
             throw new NotImplementedException();
         }
