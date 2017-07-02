@@ -5,4 +5,8 @@
     <RootNamespace>Meowtrix.osuAMT.MusicProcess</RootNamespace>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+  </PropertyGroup>
+
 </Project>

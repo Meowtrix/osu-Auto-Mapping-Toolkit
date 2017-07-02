@@ -6,4 +6,8 @@
     <RootNamespace>Meowtrix.osuAMT.Training.DataGenerator</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\MusicProcess\MusicProcess.csproj" />
+  </ItemGroup>
+
 </Project>
