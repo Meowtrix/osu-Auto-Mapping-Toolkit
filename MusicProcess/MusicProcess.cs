@@ -20,7 +20,7 @@ namespace Meowtrix.osuAMT.MusicProcess
         internal static extern int hip_decode_exit(hip_t gfp);
 
         [DllImport(LAME, CallingConvention = CallingConvention.Cdecl)]
-        internal static extern unsafe int hip_decode1(hip_t gfp, byte* buffer, [param: MarshalAs(UnmanagedType.SysInt)] int len, short* pcm_l, short* pcm_r);
+        internal static extern unsafe int hip_decode1(hip_t gfp, byte* buffer, UIntPtr len, short* pcm_l, short* pcm_r);
 
         /// <summary>
         /// Set this to change the FFT implementation used; default to a managed version FFT implementation.
@@ -50,7 +50,7 @@ namespace Meowtrix.osuAMT.MusicProcess
                 fixed (short* pcm_r = rightBuff)
                 {
                     int frameLength;
-                    while ((frameLength = hip_decode1(gfp, input, mp3.Length, pcm_l, pcm_r)) > 0)
+                    while ((frameLength = hip_decode1(gfp, input, new UIntPtr((uint)mp3.Length), pcm_l, pcm_r)) > 0)
                     {
                         var leftFrame = new short[frameLength];
                         var rightFrame = new short[frameLength];
