@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using System.Threading;
 
 namespace Meowtrix.osuAMT.Training.DataGenerator
 {
@@ -7,11 +9,12 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
     {
         static int Main(string[] args)
         {
-            if (args.Length != 1)
+            if (args.Length < 1)
             {
                 Console.WriteLine("Use root songs folder as parameter.");
                 return -1;
             }
+
             var dir = new DirectoryInfo(args[0]);
             if (!dir.Exists)
             {
@@ -19,7 +22,54 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
                 return -1;
             }
 
+            int parallel;
+            if (args.Length >= 3)
+            {
+                if (args[1] != "-n")
+                {
+                    Console.WriteLine("Use -n for parallel count.");
+                    return -1;
+                }
+                parallel = int.Parse(args[2]);
+            }
+            else
+            {
+                parallel = Environment.ProcessorCount;
+            }
+
+            var songs = dir.EnumerateDirectories().Select(d => new Folder(d))
+                .AsEnumerable<Archive>()
+                .Concat(dir.EnumerateFiles("*.osz", SearchOption.AllDirectories).Select(f => new OszArchive(f.OpenRead())));
+
+            var workers = new Thread[parallel];
+            using (var enumerator = songs.GetEnumerator())
+                for (int i = 0; i < parallel; i++)
+                {
+                    workers[i] = new Thread(() =>
+                    {
+                        while (true)
+                        {
+                            Archive archive;
+                            lock (songs)
+                            {
+                                if (!enumerator.MoveNext()) break;
+                                archive = enumerator.Current;
+                            }
+                            ProcessData(archive);
+                        }
+                    });
+                    workers[i].Start();
+                }
+
+            foreach (var thread in workers)
+                thread.Join();
+
             return 0;
+        }
+
+        static void ProcessData(Archive archive)
+        {
+
         }
     }
 }
