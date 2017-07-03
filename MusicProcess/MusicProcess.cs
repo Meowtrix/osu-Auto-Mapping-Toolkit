@@ -7,6 +7,15 @@ using System.Text;
 
 namespace Meowtrix.osuAMT.MusicProcess
 {
+    public class MusicProcessException : Exception
+    {
+        public MusicProcessException() : base() { }
+
+        public MusicProcessException(string message) : base(message) { }
+
+        public MusicProcessException(string message, Exception innerException) : base(message, innerException) { }
+    }
+
     public static class MusicProcess
     {
         /// <summary>
@@ -23,6 +32,7 @@ namespace Meowtrix.osuAMT.MusicProcess
         public static float[,] ProcessMp3(Stream mp3)
         {
             var file = new MpegFile(mp3) { StereoMode = StereoMode.DownmixToMono };
+            if (file.SampleRate != 44100) throw new MusicProcessException("Sample rate is not 44100. Consider conversion.");
             var sampleCount = (int)(file.Length / (file.Channels * sizeof(float)));
             var paddedSampleCount = (sampleCount + 255) / 256; // Ceiling to multiple of 256
             var pcm = new float[sampleCount];
