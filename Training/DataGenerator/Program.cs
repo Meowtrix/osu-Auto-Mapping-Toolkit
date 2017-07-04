@@ -39,7 +39,7 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
 
             var songs = dir.EnumerateDirectories().Select(d => new Folder(d))
                 .AsEnumerable<Archive>()
-                .Concat(dir.EnumerateFiles("*.osz", SearchOption.AllDirectories).Select(f => new OszArchive(f.OpenRead())))
+                .Concat(dir.EnumerateFiles("*.osz", SearchOption.AllDirectories).Select(f => new OszArchive(f.OpenRead(), f.Name)))
                 .ToList();
             var committedSongs = 0;
 

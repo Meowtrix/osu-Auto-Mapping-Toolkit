@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -12,6 +13,8 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
         {
             this.directory = directory;
         }
+
+        public override string Name => directory.Name;
 
         public override Stream OpenFile(string filename)
             => File.OpenRead(Path.Combine(directory.FullName, filename));

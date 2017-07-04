@@ -10,10 +10,13 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
     {
         public ZipArchive archive;
 
-        public OszArchive(Stream stream)
+        public OszArchive(Stream stream, string name)
         {
             archive = new ZipArchive(stream, ZipArchiveMode.Read, false);
+            Name = name.EndsWith(".osz") ? name.Substring(0, name.Length - 4) : name;
         }
+
+        public override string Name { get; }
 
         public void Dispose() => archive.Dispose();
 
