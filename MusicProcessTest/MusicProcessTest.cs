@@ -17,7 +17,7 @@ namespace MusicProcessTest
             float[,] result;
             using (var stream = new FileStream(Path.Combine(
                 Path.GetDirectoryName(typeof(MusicProcessTest).GetTypeInfo().Assembly.Location), file), FileMode.Open, FileAccess.Read))
-                result = MusicProcess.ProcessMp3(stream);
+                result = MusicProcesser.ProcessMp3(stream);
             // What we can do to verify the result?
             return;
         }

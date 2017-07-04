@@ -16,7 +16,7 @@ namespace Meowtrix.osuAMT.MusicProcess
         public MusicProcessException(string message, Exception innerException) : base(message, innerException) { }
     }
 
-    public static class MusicProcess
+    public static class MusicProcesser
     {
         /// <summary>
         /// Set this to change the FFT implementation used; default to a managed version FFT implementation.
