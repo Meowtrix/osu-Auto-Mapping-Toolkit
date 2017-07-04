@@ -39,7 +39,11 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
 
             var songs = dir.EnumerateDirectories().Select(d => new Folder(d))
                 .AsEnumerable<Archive>()
-                .Concat(dir.EnumerateFiles("*.osz", SearchOption.AllDirectories).Select(f => new OszArchive(f.OpenRead())));
+                .Concat(dir.EnumerateFiles("*.osz", SearchOption.AllDirectories).Select(f => new OszArchive(f.OpenRead())))
+                .ToList();
+            var committedSongs = 0;
+
+            var reportTimer = new Timer((obj) => Console.WriteLine($"{committedSongs}/{songs.Count} songs committed for processing."), null, 0, 10000);
 
             var workers = new Thread[parallel];
             using (var enumerator = songs.GetEnumerator())
@@ -54,6 +58,7 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
                             {
                                 if (!enumerator.MoveNext()) break;
                                 archive = enumerator.Current;
+                                committedSongs++;
                             }
                             ProcessData(archive);
                         }
