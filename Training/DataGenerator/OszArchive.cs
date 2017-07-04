@@ -19,6 +19,6 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
 
         public override Stream OpenFile(string filename) => archive.GetEntry(filename).Open();
 
-        public override IEnumerable<Stream> OpenOsuFiles() => archive.Entries.Where(x => x.Name.EndsWith(".osz")).Select(e => e.Open());
+        public override IEnumerable<Stream> OpenOsuFiles() => archive.Entries.Where(x => x.Name.EndsWith(".osu")).Select(e => e.Open());
     }
 }
