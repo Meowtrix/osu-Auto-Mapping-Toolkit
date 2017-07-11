@@ -34,17 +34,17 @@ namespace Meowtrix.osuAMT.MusicProcess
             var file = new MpegFile(mp3) { StereoMode = StereoMode.DownmixToMono };
             if (file.SampleRate != 44100) throw new MusicProcessException("Sample rate is not 44100. Consider conversion.");
             var sampleCount = (int)(file.Length / (file.Channels * sizeof(float)));
-            var paddedSampleCount = (sampleCount + 255) / 256; // Ceiling to multiple of 256
-            var pcm = new float[sampleCount];
+            var downSampledSampleCount = (sampleCount + 255) / 256; // Ceiling to multiple of 256
+            var pcm = new float[downSampledSampleCount * 256];
             file.ReadSamples(pcm, 0, sampleCount);
 
             // Execute FFT.
             FFT256Implementation(pcm);
 
             // Reshape the result into desired dimension.
-            var reshaped = new float[paddedSampleCount, 64];
+            var reshaped = new float[downSampledSampleCount, 64];
             // Only copying first 64 point of each FFT result: cutting off frequency data above ~11kHz should be ok for normal "music".
-            for (int i = 0; i < paddedSampleCount; ++i)
+            for (int i = 0; i < downSampledSampleCount; ++i)
                 Buffer.BlockCopy(pcm, i * 256 * sizeof(float), reshaped, i * 64 * sizeof(float), 64 * sizeof(float));
 
             return reshaped;

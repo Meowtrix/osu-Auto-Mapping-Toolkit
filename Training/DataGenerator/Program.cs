@@ -46,7 +46,6 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
                 .ToList();
             var committedSongs = 0;
 
-            var reportTimer = new Timer((obj) => Console.WriteLine($"{committedSongs}/{songs.Count} songs committed for processing."), null, 0, 10000);
             output = new BinaryWriter(File.OpenWrite("output.bin"));
 
             var workers = new Thread[parallel];
@@ -70,8 +69,23 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
                     workers[i].Start();
                 }
 
+            bool finished = false;
+
+            var reportThread = new Thread(() =>
+            {
+                while (!finished)
+                {
+                    Console.WriteLine($"{committedSongs}/{songs.Count} songs committed for processing.");
+                    Thread.Sleep(1000);
+                }
+            });
+            reportThread.Start();
+
             foreach (var thread in workers)
                 thread.Join();
+            finished = true;
+            reportThread.Join();
+
             output.Flush();
             output.Dispose();
 
@@ -141,7 +155,7 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
 
             float[,] fft;
             using (var mp3 = archive.OpenFile(audioFile))
-                fft = MusicProcesser.ProcessMp3(mp3);
+                try { fft = MusicProcesser.ProcessMp3(mp3); } catch (MusicProcessException) { return; }
 
             int sampleCount = fft.GetUpperBound(0) + 1;
             byte[] data = new byte[sampleCount];
@@ -164,6 +178,7 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
                 {
                     int sample = (int)(time * 44.1 / 256);
                     if (sample >= data.Length) break;
+                    if (sample < 0) continue;
 
                     byte signature = 1;
                     if (beat % thisPoint.sectionLength == 0) signature |= 2;
