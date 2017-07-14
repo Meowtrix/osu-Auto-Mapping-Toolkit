@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -40,54 +41,41 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
                 parallel = Environment.ProcessorCount;
             }
 
-            var songs = dir.EnumerateDirectories().Select(d => new Folder(d))
+            var songs = new ConcurrentBag<Archive>(dir.EnumerateDirectories().Select(d => new Folder(d))
                 .AsEnumerable<Archive>()
-                .Concat(dir.EnumerateFiles("*.osz", SearchOption.AllDirectories).Select(f => new OszArchive(f.OpenRead(), f.Name)))
-                .ToList();
-            var committedSongs = 0;
+                .Concat(dir.EnumerateFiles("*.osz", SearchOption.AllDirectories).Select(f => new OszArchive(f.OpenRead(), f.Name))));
+            int committedSongs = 0, totalSongs = songs.Count;
 
             output = new BinaryWriter(File.OpenWrite("output.bin"));
 
             var workers = new Thread[parallel];
-            using (var enumerator = songs.GetEnumerator())
+            for (int i = 0; i < parallel; i++)
             {
-                for (int i = 0; i < parallel; i++)
+                workers[i] = new Thread(() =>
                 {
-                    workers[i] = new Thread(() =>
-                    {
-                        while (true)
-                        {
-                            Archive archive;
-                            lock (songs)
-                            {
-                                if (!enumerator.MoveNext()) break;
-                                archive = enumerator.Current;
-                                committedSongs++;
-                            }
-                            ProcessData(archive);
-                        }
-                    });
-                    workers[i].Start();
-                }
-
-                bool finished = false;
-
-                var reportThread = new Thread(() =>
-                {
-                    while (!finished)
-                    {
-                        Console.WriteLine($"{committedSongs}/{songs.Count} songs committed for processing.");
-                        Thread.Sleep(1000);
-                    }
+                    while (songs.TryTake(out Archive archive))
+                        ProcessData(archive);
                 });
-                reportThread.Start();
-
-                foreach (var thread in workers)
-                    thread.Join();
-
-                finished = true;
-                reportThread.Join();
+                workers[i].Start();
             }
+
+            bool finished = false;
+
+            var reportThread = new Thread(() =>
+            {
+                while (!finished)
+                {
+                    Console.WriteLine($"{committedSongs}/{totalSongs} songs committed for processing.");
+                    Thread.Sleep(1000);
+                }
+            });
+            reportThread.Start();
+
+            foreach (var thread in workers)
+                thread.Join();
+
+            finished = true;
+            reportThread.Join();
 
             output.Flush();
             output.Dispose();
