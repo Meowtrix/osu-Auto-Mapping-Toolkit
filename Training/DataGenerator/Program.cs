@@ -50,6 +50,7 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
 
             var workers = new Thread[parallel];
             using (var enumerator = songs.GetEnumerator())
+            {
                 for (int i = 0; i < parallel; i++)
                 {
                     workers[i] = new Thread(() =>
@@ -69,22 +70,24 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
                     workers[i].Start();
                 }
 
-            bool finished = false;
+                bool finished = false;
 
-            var reportThread = new Thread(() =>
-            {
-                while (!finished)
+                var reportThread = new Thread(() =>
                 {
-                    Console.WriteLine($"{committedSongs}/{songs.Count} songs committed for processing.");
-                    Thread.Sleep(1000);
-                }
-            });
-            reportThread.Start();
+                    while (!finished)
+                    {
+                        Console.WriteLine($"{committedSongs}/{songs.Count} songs committed for processing.");
+                        Thread.Sleep(1000);
+                    }
+                });
+                reportThread.Start();
 
-            foreach (var thread in workers)
-                thread.Join();
-            finished = true;
-            reportThread.Join();
+                foreach (var thread in workers)
+                    thread.Join();
+
+                finished = true;
+                reportThread.Join();
+            }
 
             output.Flush();
             output.Dispose();
