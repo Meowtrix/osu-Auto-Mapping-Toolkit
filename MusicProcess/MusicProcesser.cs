@@ -36,7 +36,8 @@ namespace Meowtrix.osuAMT.MusicProcess
             var sampleCount = (int)(file.Length / (file.Channels * sizeof(float)));
             var downSampledSampleCount = (sampleCount + 255) / 256; // Ceiling to multiple of 256
             var pcm = new float[downSampledSampleCount * 256];
-            file.ReadSamples(pcm, 0, sampleCount);
+
+            try { file.ReadSamples(pcm, 0, sampleCount); } catch { throw new MusicProcessException("NLayer Error."); }
 
             // Execute FFT.
             FFT256Implementation(pcm);
