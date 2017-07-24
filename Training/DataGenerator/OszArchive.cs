@@ -32,7 +32,13 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
         public override Stream OpenFile(string filename)
         {
             EnsureArchiveOpened();
-            return archive.GetEntry(filename).Open();
+            var temp = new MemoryStream();
+            using (var deflate = archive.GetEntry(filename).Open())
+            {
+                deflate.CopyTo(temp);
+                temp.Seek(0, SeekOrigin.Begin);
+                return temp;
+            }
         }
 
         public override IEnumerable<Stream> OpenOsuFiles()
