@@ -148,6 +148,8 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
             using (var mp3 = archive.OpenFile(audioFile))
                 try { fft = MusicProcesser.ProcessMp3(mp3); } catch (MusicProcessException) { return; }
 
+            (archive as IDisposable)?.Dispose();
+
             int sampleCount = fft.GetUpperBound(0) + 1;
             byte[] data = new byte[sampleCount];
             timingList.Add((double.MaxValue, double.NaN, 0, false)); //fence item
