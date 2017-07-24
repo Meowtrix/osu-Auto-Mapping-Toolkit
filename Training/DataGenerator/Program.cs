@@ -43,7 +43,7 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
 
             var songs = new ConcurrentBag<Archive>(dir.EnumerateDirectories().Select(d => new Folder(d))
                 .AsEnumerable<Archive>()
-                .Concat(dir.EnumerateFiles("*.osz", SearchOption.AllDirectories).Select(f => new OszArchive(f.OpenRead(), f.Name))));
+                .Concat(dir.EnumerateFiles("*.osz", SearchOption.AllDirectories).Select(f => new OszArchive(f))));
             int committedSongs = 0, totalSongs = songs.Count;
 
             output = new BinaryWriter(File.OpenWrite("output.bin"));

@@ -10,9 +10,12 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
     {
         public ZipArchive archive;
 
-        public OszArchive(Stream stream, string name)
+        private FileInfo fileinfo;
+
+        public OszArchive(FileInfo file)
         {
-            archive = new ZipArchive(stream, ZipArchiveMode.Read, false);
+            fileinfo = file;
+            string name = file.Name;
             Name = name.EndsWith(".osz") ? name.Substring(0, name.Length - 4) : name;
         }
 
@@ -20,8 +23,22 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
 
         public void Dispose() => archive.Dispose();
 
-        public override Stream OpenFile(string filename) => archive.GetEntry(filename).Open();
+        private void EnsureArchiveOpened()
+        {
+            if (archive == null)
+                archive = new ZipArchive(fileinfo.OpenRead(), ZipArchiveMode.Read, false);
+        }
 
-        public override IEnumerable<Stream> OpenOsuFiles() => archive.Entries.Where(x => x.Name.EndsWith(".osu")).Select(e => e.Open());
+        public override Stream OpenFile(string filename)
+        {
+            EnsureArchiveOpened();
+            return archive.GetEntry(filename).Open();
+        }
+
+        public override IEnumerable<Stream> OpenOsuFiles()
+        {
+            EnsureArchiveOpened();
+            return archive.Entries.Where(x => x.Name.EndsWith(".osu")).Select(e => e.Open());
+        }
     }
 }
