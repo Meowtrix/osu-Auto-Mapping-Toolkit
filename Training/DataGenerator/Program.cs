@@ -54,7 +54,10 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
                 workers[i] = new Thread(() =>
                 {
                     while (songs.TryTake(out Archive archive))
+                    {
+                        Interlocked.Increment(ref committedSongs);
                         ProcessData(archive);
+                    }
                 });
                 workers[i].Start();
             }
@@ -65,7 +68,7 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
             {
                 while (!finished)
                 {
-                    Console.WriteLine($"{committedSongs}/{totalSongs} songs committed for processing.");
+                    Console.WriteLine($"{Volatile.Read(ref committedSongs)}/{totalSongs} songs committed for processing.");
                     Thread.Sleep(1000);
                 }
             });
