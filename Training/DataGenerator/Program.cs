@@ -57,7 +57,10 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
                     {
                         Interlocked.Increment(ref committedSongs);
                         try { ProcessData(archive); }
-                        catch (Exception e) { throw new Exception($"Error processing {archive.Name}.", e); }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(new Exception($"Error processing {archive.Name}. Ignoring.", e).ToString());
+                        }
                     }
                 });
                 workers[i].Start();
