@@ -70,7 +70,7 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
 
             var reportThread = new Thread(() =>
             {
-                while (!finished)
+                while (!Volatile.Read(ref finished))
                 {
                     Console.WriteLine($"{Volatile.Read(ref committedSongs)}/{totalSongs} songs committed for processing.");
                     Thread.Sleep(1000);
@@ -81,7 +81,7 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
             foreach (var thread in workers)
                 thread.Join();
 
-            finished = true;
+            Volatile.Write(ref finished, true);
             reportThread.Join();
 
             output.Flush();
