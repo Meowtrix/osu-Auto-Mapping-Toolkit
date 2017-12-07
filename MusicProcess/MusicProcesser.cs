@@ -1,4 +1,5 @@
-﻿using MathNet.Numerics.LinearAlgebra;
+﻿using ManagedBass;
+using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,13 +20,29 @@ namespace Meowtrix.osuAMT.MusicProcess
     public static class MusicProcesser
     {
         /// <summary>
-        /// Process mp3 data for use in training and evaluating the machine learning models.
+        /// Process audio data for use in training and evaluating the machine learning models.
         /// </summary>
-        /// <param name="mp3">Mp3 data in memory.</param>
+        /// <param name="data">Audio data in memory.</param>
         /// <returns>Data as matrix for the ML models. One row for a data point in the sequence.</returns>
-        public static Matrix<double> ProcessMp3(Stream mp3)
+        public unsafe static Vector<float> ProcessData(byte[] data)
         {
-            throw new NotImplementedException();
+            if (!Bass.Init(0))
+                throw new MusicProcessException("BASS Error: Initialization failed.");
+
+            var bassStream = Bass.CreateStream(data, 0, data.Length, BassFlags.Float | BassFlags.Mono | BassFlags.Decode | BassFlags.Prescan);
+            if (bassStream == 0)
+                throw new MusicProcessException($"BASS Error: Failed to create stream with error code {Bass.LastError}.");
+            
+            if (Math.Abs(Bass.ChannelGetAttribute(bassStream, ChannelAttribute.Frequency) - 44100) > 1e-3)
+                throw new MusicProcessException("Audio with non-44.1k sample rate not supported.");
+
+            var decodedLength = (int)Bass.ChannelGetLength(bassStream);
+            var result = Vector<float>.Build.Dense(decodedLength);
+            Bass.ChannelGetData(bassStream, result.AsArray(), decodedLength);
+
+            Bass.StreamFree(bassStream);
+            Bass.Free();
+            return result;
         }
     }
 }

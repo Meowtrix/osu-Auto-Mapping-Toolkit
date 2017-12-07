@@ -14,6 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ManagedBass" Version="2.0.4" />
     <PackageReference Include="MathNet.Numerics" Version="4.0.0-alpha02" />
   </ItemGroup>
 
