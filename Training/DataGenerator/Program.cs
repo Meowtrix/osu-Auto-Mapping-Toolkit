@@ -151,13 +151,17 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
             if (audioFile?.EndsWith(".mp3") != true) return;
             if (timingList.Count == 0) return;
 
-            float[,] fft;
-            using (var mp3 = archive.OpenFile(audioFile))
-                try { fft = MusicProcesser.ProcessMp3(mp3); } catch (MusicProcessException) { return; }
+            float[] audiodata;
+            using (var reader = new BinaryReader(archive.OpenFile(audioFile)))
+                try
+                {
+                    audiodata = MusicProcesser.ProcessData(reader.ReadBytes((int)reader.BaseStream.Length)).AsArray();
+                }
+                catch (MusicProcessException) { return; }
 
             (archive as IDisposable)?.Dispose();
 
-            int sampleCount = fft.GetUpperBound(0) + 1;
+            int sampleCount = audiodata.GetUpperBound(0) + 1;
             byte[] data = new byte[sampleCount];
             timingList.Add((double.MaxValue, double.NaN, 0, false)); //fence item
 
@@ -189,8 +193,8 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
                 }
             }
 
-            byte[] fftbytes = new byte[fft.Length * sizeof(float)];
-            Buffer.BlockCopy(fft, 0, fftbytes, 0, fftbytes.Length);
+            byte[] audiobytes = new byte[audiodata.Length * sizeof(float)];
+            Buffer.BlockCopy(audiodata, 0, audiobytes, 0, audiobytes.Length);
 
             var idstr = Regex.Match(archive.Name, @"\d+");
             int id = -1;
@@ -201,7 +205,7 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
             {
                 output.Write(id);
                 output.Write(sampleCount);
-                output.Write(fftbytes);
+                output.Write(audiobytes);
                 output.Write(data);
             }
         }
