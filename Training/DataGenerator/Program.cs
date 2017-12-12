@@ -148,20 +148,19 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
                             timingList.Insert(i, (time, beatLength, sectionLength, kiai));
                     }
                 }
-            if (audioFile?.EndsWith(".mp3") != true) return;
             if (timingList.Count == 0) return;
 
             float[] audiodata;
             using (var reader = new BinaryReader(archive.OpenFile(audioFile)))
                 try
                 {
-                    audiodata = MusicProcesser.ProcessData(reader.ReadBytes((int)reader.BaseStream.Length)).AsArray();
+                    audiodata = MusicProcesser.ProcessData(reader.ReadBytes((int)reader.BaseStream.Length)).ToArray();
                 }
                 catch (MusicProcessException) { return; }
 
             (archive as IDisposable)?.Dispose();
 
-            int sampleCount = audiodata.GetUpperBound(0) + 1;
+            int sampleCount = audiodata.Length + 1;
             byte[] data = new byte[sampleCount];
             timingList.Add((double.MaxValue, double.NaN, 0, false)); //fence item
 
@@ -180,7 +179,7 @@ namespace Meowtrix.osuAMT.Training.DataGenerator
 
                 for (double time = thisPoint.time; time < nextTime; time += length)
                 {
-                    int sample = (int)(time * 44.1 / 256);
+                    int sample = (int)(time * 44.1);
                     if (sample >= data.Length) break;
                     if (sample < 0) continue;
 
